@@ -31,6 +31,7 @@ return new class extends Migration
             $table->string('user_type')->default('user');
             $table->string('status')->default('pending');
             $table->integer('count')->default(0);
+            $table->string('otp')->nullable(); // Added OTP field
             $table->timestamps();
         });
 

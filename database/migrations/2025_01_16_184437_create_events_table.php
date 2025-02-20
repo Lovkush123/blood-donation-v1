@@ -23,6 +23,8 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('status')->default('pending'); // Default value
             $table->unsignedBigInteger('user_id'); // No foreign key
+            $table->integer('members')->default(0); // New field for number of members
+            $table->string('concern_person'); // New field for the concerned person
             $table->timestamps(); // created_at and updated_at
         });
     }

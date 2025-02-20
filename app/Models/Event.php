@@ -25,5 +25,7 @@ class Event extends Model
         'description',
         'status',
         'user_id',
+        'members', // Added new field
+        'concern_person', // Added new field
     ];
 }

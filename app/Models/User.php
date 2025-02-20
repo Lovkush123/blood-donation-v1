@@ -28,16 +28,21 @@ class User extends Authenticatable
         'token',
         'user_type',
         'status',
-        'count'
+        'count',
+        'otp',
     ];
 
     // Hide password and token when converting to array or JSON
     protected $hidden = [
-        'password', 'remember_token',
+        'password', 'remember_token','otp',
     ];
 
     // Cast password field to ensure it is hashed
     protected $casts = [
+        'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'last_donation_date' => 'date',
+        'date_of_birth' => 'date',
+       
     ];
 }

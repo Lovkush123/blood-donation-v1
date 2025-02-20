@@ -26,6 +26,8 @@ class EventController extends Controller
             'description' => 'nullable|string',
             'status' => 'required|string|max:50',
             'user_id' => 'required|integer',
+            'members' => 'required|string|max:255',
+            'concern_person' => 'required|string|max:255',
         ]);
 
         $event = Event::create($validated);
@@ -53,6 +55,8 @@ class EventController extends Controller
                 'description' => 'nullable|string',
                 'status' => 'nullable|string|max:50',
                 'user_id' => 'nullable|integer',
+                'members' => 'nullable|string|max:255',
+                'concern_person' => 'nullable|string|max:255',
             ]);
     
             // Find the event or throw a 404 error

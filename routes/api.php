@@ -15,7 +15,10 @@ Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanct
 Route::patch('update/{userId}', [AuthController::class, 'update']);
 Route::get('/user/{id}', [AuthController::class, 'fetchUser']);
 Route::get('users', [AuthController::class, 'fetchAllUsers']);
-
+Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
+Route::post('verify-otp', [AuthController::class, 'verifyOtp']);
+Route::post('reset-password', [AuthController::class, 'resetPassword']);
+Route::post('fetchnear', [AuthController::class, 'fetchNearbyUsers']);
 // Subscription Routes
 Route::get('subscription', [SubscriptionController::class, 'index']);
 Route::post('subscription', [SubscriptionController::class, 'store']);
