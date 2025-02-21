@@ -25,12 +25,12 @@ return new class extends Migration
             $table->integer('age')->nullable();
             $table->string('blood_type', 3)->nullable();
             $table->date('last_donation_date')->nullable();
-            $table->boolean('eligibility_status')->default(true);
-            $table->integer('credit_points')->default(0);
+            $table->boolean('eligibility_status')->nullable(true);
+            $table->integer('credit_points')->nullable(0);
             $table->string('token')->nullable();
-            $table->string('user_type')->default('user');
-            $table->string('status')->default('pending');
-            $table->integer('count')->default(0);
+            $table->string('user_type')->nullable('user');
+            $table->string('status')->nullable('pending');
+            $table->integer('count')->nullable(0);
             $table->string('otp')->nullable(); // Added OTP field
             $table->timestamps();
         });
