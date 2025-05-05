@@ -12,44 +12,18 @@ class SendOtpMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $otp; // OTP variable
+    public $otp;
 
-    /**
-     * Create a new message instance.
-     */
     public function __construct($otp)
     {
         $this->otp = $otp;
     }
 
-    /**
-     * Get the message envelope.
-     */
-    public function envelope(): Envelope
+    public function build()
     {
-        return new Envelope(
-            subject: 'Your Password Reset OTP',
-        );
-    }
-
-    /**
-     * Get the message content definition.
-     */
-    public function content(): Content
-    {
-        return new Content(
-            view: 'emails.otp', // Correct Blade view for OTP email
-            with: ['otp' => $this->otp], // Pass OTP to the view
-        );
-    }
-
-    /**
-     * Get the attachments for the message.
-     *
-     * @return array
-     */
-    public function attachments(): array
-    {
-        return [];
+        return $this->subject('Your OTP Code')
+                    ->view('emails.send_otp')
+                    ->with(['otp' => $this->otp]);
     }
 }
+

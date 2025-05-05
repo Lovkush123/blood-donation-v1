@@ -12,70 +12,201 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\OTP;  // You may need a package for OTP like 'OTP' or 'Twilio'
 use Illuminate\Support\Facades\Mail;
 use App\Mail\SendOtpMail;
+use Carbon\Carbon;
 
 class AuthController extends Controller
 {
  
     // Login using username and password
-    public function login(Request $request)
-    {
-        // Validate request input
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|string|email|max:255',
-            'password' => 'required|string|min:8',
-        ]);
-    
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-    
-        // Find user by email
-        $user = User::where('email', $request->email)->first();
-    
-        // Check if user exists and password is correct
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
-        }
-    
-        // Check if the user is active (if applicable)
-        if ($user->status !== 'active') {
-            return response()->json(['message' => 'Account is inactive. Contact support.'], 403);
-        }
-    
-        // Generate API Token
-        $token = $user->createToken('AppToken')->plainTextToken;
-    
-        // Return user details with token
-        return response()->json([
-            'message' => 'Login successful!',
-            'token' => $token,
-            'user' => [
-                'id' => $user->id,
-                'full_name' => $user->full_name,
-                'username' => $user->username,
-                'email' => $user->email,
-                'phone_number' => $user->phone_number,
-                'address' => $user->address,
-                'latitude' => $user->latitude,
-                'longitude' => $user->longitude,
-                'date_of_birth' => $user->date_of_birth,
-                'age' => $user->age,
-                'blood_type' => $user->blood_type,
-                'last_donation_date' => $user->last_donation_date,
-                'eligibility_status' => $user->eligibility_status,
-                'credit_points' => $user->credit_points,
-                'user_type' => $user->user_type,
-                'status' => $user->status,
-                'count' => $user->count,
-                'created_at' => $user->created_at,
-                'updated_at' => $user->updated_at,
-            ]
-        ], 200);
+public function login(Request $request)
+{
+    // Validate request input
+    $validator = Validator::make($request->all(), [
+        'username' => 'required|string|max:255',
+        'password' => 'required|string|min:8',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json(['errors' => $validator->errors()], 422);
     }
+
+    // Find user by username
+    $user = User::where('username', $request->username)->first();
+
+    // Check if user exists and password is correct
+    if (!$user || !Hash::check($request->password, $user->password)) {
+        return response()->json(['message' => 'Invalid credentials'], 401);
+    }
+
+    // Generate API Token
+    $token = $user->createToken('AppToken')->plainTextToken;
+
+    // Return user details with token
+    return response()->json([
+        'message' => 'Login successful!',
+        'token' => $token,
+        'user' => [
+            'user_id' => $user->user_id,
+            'full_name' => $user->full_name,
+            'username' => $user->username,
+            'email' => $user->email,
+            'phone_number' => $user->phone_number,
+            'address' => $user->address,
+            'latitude' => $user->latitude,
+            'longitude' => $user->longitude,
+            'current_latitude' => $user->current_latitude, // Added current latitude
+            'current_longitude' => $user->current_longitude, // Added current longitude
+            'date_of_birth' => $user->date_of_birth,
+            'age' => $user->age,
+            'blood_type' => $user->blood_type,
+            'last_donation_date' => $user->last_donation_date,
+            'eligibility_status' => $user->eligibility_status,
+            'credit_points' => $user->credit_points,
+            'user_type' => $user->user_type,
+            'status' => $user->status,
+            'count' => $user->count,
+            'donor_type' => $user->donor_type, // Added donor type
+            'created_at' => $user->created_at,
+            'updated_at' => $user->updated_at,
+        ]
+    ], 200);
+}
+
     // Register a new user
-    public function register(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
+// public function register(Request $request)
+// {
+//     $validator = Validator::make($request->all(), [
+//         'full_name' => 'required|string|max:255',
+//         'username' => 'required|string|max:255|unique:users',
+//         'email' => 'required|string|email|max:255|unique:users',
+//         'password' => 'required|string|min:8',
+//         'phone_number' => 'required|string',
+//         'address' => 'required|string',
+//         'date_of_birth' => 'required|date',
+//         'latitude' => 'nullable|numeric',
+//         'longitude' => 'nullable|numeric',
+//         'current_latitude' => 'nullable|numeric', // Added current latitude validation
+//         'current_longitude' => 'nullable|numeric', // Added current longitude validation
+//         'blood_type' => 'nullable|string',
+//         'last_donation_date' => 'nullable|date',
+//         'eligibility_status' => 'nullable|string',
+//         'credit_points' => 'nullable|integer',
+//         'user_type' => 'nullable|string',
+//         'count' => 'nullable|integer',
+//         'donor_type' => 'nullable|string', // Added donor type validation
+//     ]);
+
+//     if ($validator->fails()) {
+//         return response()->json(['errors' => $validator->errors()], 422);
+//     }
+
+//     try {
+//         $user = User::create([
+//             'full_name' => $request->full_name,
+//             'username' => $request->username,
+//             'email' => $request->email,
+//             'password' => Hash::make($request->password),
+//             'phone_number' => $request->phone_number,
+//             'address' => $request->address,
+//             'latitude' => $request->latitude,
+//             'longitude' => $request->longitude,
+//             'current_latitude' => $request->current_latitude, // Added current latitude
+//             'current_longitude' => $request->current_longitude, // Added current longitude
+//             'date_of_birth' => $request->date_of_birth,
+//             'blood_type' => $request->blood_type,
+//             'last_donation_date' => $request->last_donation_date,
+//             'eligibility_status' => '1',
+//             'credit_points' =>0,
+//             'token' => Str::random(60),
+//             'user_type' => $request->user_type,
+//             'status' => 'pending', // Set status to pending
+//             'otp' => rand(100000, 999999),
+//             'count' =>0,
+//             'donor_type' => $request->donor_type, // Added donor type field
+//         ]);
+
+//         return response()->json(['message' => 'User registered successfully!', 'user' => $user], 201);
+//     } catch (\Exception $e) {
+//         return response()->json(['error' => $e->getMessage()], 500);
+//     }
+// }
+
+public function register(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'username' => 'required|string|max:255|unique:users',
+        'email' => 'required|string|email|max:255|unique:users',
+        'phone_number' => 'required|string',
+        'password' => 'required|string|min:8',
+
+        // Optional fields
+        'full_name' => 'nullable|string|max:255',
+        'address' => 'nullable|string',
+        'date_of_birth' => 'nullable|date',
+        'latitude' => 'nullable|numeric',
+        'longitude' => 'nullable|numeric',
+        'current_latitude' => 'nullable|numeric',
+        'current_longitude' => 'nullable|numeric',
+        'blood_type' => 'nullable|string',
+        'last_donation_date' => 'nullable|date',
+        'eligibility_status' => 'nullable|string',
+        'credit_points' => 'nullable|integer',
+        'user_type' => 'nullable|string',
+        'count' => 'nullable|integer',
+        'donor_type' => 'nullable|string',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json(['errors' => $validator->errors()], 422);
+    }
+
+    try {
+        $user = User::create([
+             'user_id' => $request->user_id,
+            'full_name' => $request->full_name,
+            'username' => $request->username,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'phone_number' => $request->phone_number,
+            'address' => $request->address,
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
+            'current_latitude' => $request->current_latitude,
+            'current_longitude' => $request->current_longitude,
+            'date_of_birth' => $request->date_of_birth,
+            'blood_type' => $request->blood_type,
+            'last_donation_date' => $request->last_donation_date,
+            'eligibility_status' => '1',
+            'credit_points' => 0,
+            'token' => Str::random(60),
+            'user_type' => $request->user_type,
+            'status' => 'pending',
+            'otp' => rand(100000, 999999),
+            'count' => 0,
+            'donor_type' => $request->donor_type,
+        ]);
+
+        return response()->json(['message' => 'User registered successfully!', 'user' => $user], 201);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+}
+
+
+public function registerer(Request $request)
+{
+    try {
+        // Validate and calculate age from date_of_birth before validation
+        if (!$request->filled('date_of_birth') || !strtotime($request->date_of_birth)) {
+            return response()->json(['error' => 'Invalid or missing date_of_birth'], 422);
+        }
+        
+        $dob = new DateTime($request->date_of_birth);
+        $today = new DateTime();
+        $age = $today->diff($dob)->y; // Get age in years
+        echo $age;
+        // Validation
+        $validator = Validator::make($request->all() + ['age' => $age], [
             'full_name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users',
             'email' => 'required|string|email|max:255|unique:users',
@@ -85,48 +216,50 @@ class AuthController extends Controller
             'date_of_birth' => 'required|date',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
-            'age' => 'nullable|integer',
             'blood_type' => 'nullable|string',
             'last_donation_date' => 'nullable|date',
             'eligibility_status' => 'nullable|string',
             'credit_points' => 'nullable|integer',
             'user_type' => 'nullable|string',
-            'status' => 'nullable|string',
             'count' => 'nullable|integer',
+            'age' => 'nullable|integer'
         ]);
-    
+
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
-    
-        try {
-            $user = User::create([
-                'full_name' => $request->full_name,
-                'username' => $request->username,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-                'phone_number' => $request->phone_number,
-                'address' => $request->address,
-                'latitude' => $request->latitude,
-                'longitude' => $request->longitude,
-                'date_of_birth' => $request->date_of_birth,
-                'age' => $request->age,
-                'blood_type' => $request->blood_type,
-                'last_donation_date' => $request->last_donation_date,
-                'eligibility_status' => $request->eligibility_status,
-                'credit_points' => $request->credit_points,
-                'token' => Str::random(60),
-                'user_type' => $request->user_type,
-                'status' => $request->status,
-                'count' => $request->count,
-                'otp' => rand(100000, 999999),
-            ]);
-    
-            return response()->json(['message' => 'User registered successfully!', 'user' => $user], 201);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
+
+        // Create new user
+        $user = User::create([
+            'full_name' => $request->full_name,
+            'username' => $request->username,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'phone_number' => $request->phone_number,
+            'address' => $request->address,
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
+            'date_of_birth' => $request->date_of_birth,
+            'age' => $age, // Store calculated age
+            'blood_type' => $request->blood_type,
+            'last_donation_date' => $request->last_donation_date,
+            'eligibility_status' => '1',
+            'credit_points' => 0,
+            'token' => Str::random(60),
+            'user_type' => $request->user_type,
+            'status' => 'pending', // Set status to pending
+            'otp' => rand(100000, 999999),
+            'count' => 0, // Ensure count has a default value
+        ]);
+
+        return response()->json(['message' => 'User registered successfully!', 'user' => $user], 201);
+    } catch (\Exception $e) {
+        \Log::error('User Registration Error: ' . $e->getMessage());
+        return response()->json(['error' => 'Something went wrong! Please try again.'], 500);
     }
+}
+
+
     
     // Logout the user (API-based auth example)
     public function logout(Request $request)
@@ -167,7 +300,106 @@ class AuthController extends Controller
      }
  
 
-    public function update(Request $request, $userId)
+//     public function update(Request $request, $userId)
+// {
+//     try {
+//         // Find the user by user_id
+//         $user = User::findOrFail($userId);
+
+//         // Validate the request to ensure all fields can be updated
+//         $request->validate([
+//             'full_name' => 'sometimes|required|string',
+//             'username' => 'sometimes|required|string|unique:users,username,' . $user->id,
+//             'email' => 'sometimes|required|string|email|unique:users,email,' . $user->id,
+//             'password' => 'sometimes|required|string|min:8',
+//             'phone_number' => 'sometimes|required|string',
+//             'address' => 'sometimes|required|string',
+//             'latitude' => 'sometimes|required|numeric',
+//             'longitude' => 'sometimes|required|numeric',
+//             'date_of_birth' => 'sometimes|required|date',
+//             'age' => 'sometimes|required|integer',
+//             'blood_type' => 'sometimes|required|string',
+//             'last_donation_date' => 'sometimes|required|date',
+//             'eligibility_status' => 'sometimes|required|string',
+//             'credit_points' => 'sometimes|required|integer',
+//             'token' => 'sometimes|required|string',
+//             'user_type' => 'sometimes|required|string|in:admin,user,hospital',
+//             'status' => 'sometimes|required|string',
+//             'count' => 'sometimes|required|integer',
+//         ]);
+
+//         // Update the user fields from the request if present
+//         if ($request->has('full_name')) {
+//             $user->full_name = $request->full_name;
+//         }
+//         if ($request->has('username')) {
+//             $user->username = $request->username;
+//         }
+//         if ($request->has('email')) {
+//             $user->email = $request->email;
+//         }
+//         if ($request->has('password')) {
+//             $user->password = Hash::make($request->password);
+//         }
+//         if ($request->has('phone_number')) {
+//             $user->phone_number = $request->phone_number;
+//         }
+//         if ($request->has('address')) {
+//             $user->address = $request->address;
+//         }
+//         if ($request->has('latitude')) {
+//             $user->latitude = $request->latitude;
+//         }
+//         if ($request->has('longitude')) {
+//             $user->longitude = $request->longitude;
+//         }
+//         if ($request->has('date_of_birth')) {
+//             $user->date_of_birth = $request->date_of_birth;
+//         }
+//         if ($request->has('age')) {
+//             $user->age = $request->age;
+//         }
+//         if ($request->has('blood_type')) {
+//             $user->blood_type = $request->blood_type;
+//         }
+//         if ($request->has('last_donation_date')) {
+//             $user->last_donation_date = $request->last_donation_date;
+//         }
+//         if ($request->has('eligibility_status')) {
+//             $user->eligibility_status = $request->eligibility_status;
+//         }
+//         if ($request->has('credit_points')) {
+//             $user->credit_points = $request->credit_points;
+//         }
+//         if ($request->has('token')) {
+//             $user->token = $request->token;
+//         }
+//         if ($request->has('user_type')) {
+//             $user->user_type = $request->user_type;
+//         }
+//         if ($request->has('status')) {
+//             $user->status = $request->status;
+//         }
+//         if ($request->has('count')) {
+//             $user->count = $request->count;
+//         }
+
+//         // Save the updated user data
+//         $user->save();
+
+//         // Return a success response
+//         return response()->json([
+//             'message' => 'Profile updated successfully',
+//             'user' => $user,
+//         ]);
+//     } catch (\Exception $e) {
+//         return response()->json([
+//             'error' => 'Profile update failed',
+//             'message' => $e->getMessage(),
+//         ], 500);
+//     }
+// }
+public function update(Request $request, $userId)
 {
     try {
         // Find the user by user_id
@@ -183,6 +415,8 @@ class AuthController extends Controller
             'address' => 'sometimes|required|string',
             'latitude' => 'sometimes|required|numeric',
             'longitude' => 'sometimes|required|numeric',
+            'current_latitude' => 'sometimes|required|numeric', // Added current latitude validation
+            'current_longitude' => 'sometimes|required|numeric', // Added current longitude validation
             'date_of_birth' => 'sometimes|required|date',
             'age' => 'sometimes|required|integer',
             'blood_type' => 'sometimes|required|string',
@@ -193,62 +427,18 @@ class AuthController extends Controller
             'user_type' => 'sometimes|required|string|in:admin,user,hospital',
             'status' => 'sometimes|required|string',
             'count' => 'sometimes|required|integer',
+            'donor_type' => 'sometimes|required|string', // Added donor type validation
         ]);
 
         // Update the user fields from the request if present
-        if ($request->has('full_name')) {
-            $user->full_name = $request->full_name;
-        }
-        if ($request->has('username')) {
-            $user->username = $request->username;
-        }
-        if ($request->has('email')) {
-            $user->email = $request->email;
-        }
+        $user->fill($request->only([
+            'full_name', 'username', 'email', 'phone_number', 'address', 'latitude', 'longitude',
+            'current_latitude', 'current_longitude', 'date_of_birth', 'age', 'blood_type', 'last_donation_date',
+            'eligibility_status', 'credit_points', 'token', 'user_type', 'status', 'count', 'donor_type'
+        ]));
+
         if ($request->has('password')) {
             $user->password = Hash::make($request->password);
-        }
-        if ($request->has('phone_number')) {
-            $user->phone_number = $request->phone_number;
-        }
-        if ($request->has('address')) {
-            $user->address = $request->address;
-        }
-        if ($request->has('latitude')) {
-            $user->latitude = $request->latitude;
-        }
-        if ($request->has('longitude')) {
-            $user->longitude = $request->longitude;
-        }
-        if ($request->has('date_of_birth')) {
-            $user->date_of_birth = $request->date_of_birth;
-        }
-        if ($request->has('age')) {
-            $user->age = $request->age;
-        }
-        if ($request->has('blood_type')) {
-            $user->blood_type = $request->blood_type;
-        }
-        if ($request->has('last_donation_date')) {
-            $user->last_donation_date = $request->last_donation_date;
-        }
-        if ($request->has('eligibility_status')) {
-            $user->eligibility_status = $request->eligibility_status;
-        }
-        if ($request->has('credit_points')) {
-            $user->credit_points = $request->credit_points;
-        }
-        if ($request->has('token')) {
-            $user->token = $request->token;
-        }
-        if ($request->has('user_type')) {
-            $user->user_type = $request->user_type;
-        }
-        if ($request->has('status')) {
-            $user->status = $request->status;
-        }
-        if ($request->has('count')) {
-            $user->count = $request->count;
         }
 
         // Save the updated user data
@@ -296,37 +486,36 @@ public function fetchAllUsers()
     }
 
 // Forgot Password (using OTP)
-public function forgotPassword(Request $request)
-{
-    // Validate email input
-    $validator = Validator::make($request->all(), [
-        'email' => 'required|string|email|max:255',
-    ]);
+  public function forgotPassword(Request $request)
+    {
+        // Validate email input
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|string|email|max:255|exists:users,email',
+        ]);
 
-    // If validation fails, return error response
-    if ($validator->fails()) {
-        return response()->json(['errors' => $validator->errors()], 422);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        // Get user by email
+        $user = User::where('email', $request->email)->first();
+
+        // Rate limiting - prevent OTP spam
+        if ($user->otp_created_at && Carbon::parse($user->otp_created_at)->diffInMinutes(now()) < 5) {
+            return response()->json(['message' => 'OTP has already been sent. Please wait before requesting again.'], 429);
+        }
+
+        // Generate and store OTP with expiry
+        $otp = rand(100000, 999999);
+        $user->otp = $otp;
+        $user->otp_created_at = now(); // Store timestamp
+        $user->save();
+
+        // Queue email for faster response
+        Mail::to($user->email)->queue(new SendOtpMail($otp));
+
+        return response()->json(['message' => 'OTP sent successfully to your email. It expires in 10 minutes.'], 200);
     }
-
-    // Check if user exists with provided email
-    $user = User::where('email', $request->email)->first();
-    
-    if (!$user) {
-        return response()->json(['message' => 'User not found!'], 404);
-    }
-
-    // Generate a random OTP
-    $otp = rand(100000, 999999);
-    $user->otp = $otp;
-    $user->save();
-
-    // Send OTP to email using SendOtpMail mailable
-    Mail::to($user->email)->send(new SendOtpMail($otp));
-
-    // Return success response
-    return response()->json(['message' => 'OTP sent successfully to your email'], 200);
-}
-
 // Verify OTP for Password Reset
 public function verifyOtp(Request $request)
 {
@@ -373,6 +562,56 @@ public function resetPassword(Request $request)
 
     return response()->json(['message' => 'Password reset successfully'], 200);
 }
+// public function fetchNearbyUsers(Request $request)
+// {
+//     $validator = Validator::make($request->all(), [
+//         'latitude' => 'required|numeric',
+//         'longitude' => 'required|numeric',
+//         'radius' => 'required|numeric', // Radius in kilometers
+//         'min_age' => 'nullable|integer',
+//         'max_age' => 'nullable|integer',
+//         'blood_type' => 'nullable|string',
+//     ]);
+
+//     if ($validator->fails()) {
+//         return response()->json(['errors' => $validator->errors()], 422);
+//     }
+
+//     $latitude = $request->latitude;
+//     $longitude = $request->longitude;
+//     $radius = $request->radius;
+//     $minAge = $request->min_age;
+//     $maxAge = $request->max_age;
+//     $bloodType = $request->blood_type;
+
+//     $query = User::select('*')
+//         ->selectRaw('(
+//             6371 * acos(
+//                 cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) +
+//                 sin(radians(?)) * sin(radians(latitude))
+//             )
+//         ) AS distance', [$latitude, $longitude, $latitude])
+//         ->having('distance', '<=', $radius)
+//         ->where('user_type', 'user') // Ensure only users are fetched
+//         ->orderBy('distance');
+
+//     if (!empty($minAge) && !empty($maxAge)) {
+//         $query->whereBetween('age', [$minAge, $maxAge]);
+//     } elseif (!empty($minAge)) {
+//         $query->where('age', '>=', $minAge);
+//     } elseif (!empty($maxAge)) {
+//         $query->where('age', '<=', $maxAge);
+//     }
+
+//     if (!empty($bloodType)) {
+//         $query->where('blood_type', $bloodType);
+//     }
+
+//     $nearbyUsers = $query->get();
+
+//     return response()->json(['nearby_users' => $nearbyUsers], 200);
+// }
+
 public function fetchNearbyUsers(Request $request)
 {
     $validator = Validator::make($request->all(), [
@@ -381,7 +620,8 @@ public function fetchNearbyUsers(Request $request)
         'radius' => 'required|numeric', // Radius in kilometers
         'min_age' => 'nullable|integer',
         'max_age' => 'nullable|integer',
-        'blood_type' => 'nullable|string',
+        'blood_types' => 'nullable|array', // Allow multiple blood types
+        'blood_types.*' => 'string', // Ensure each blood type is a string
     ]);
 
     if ($validator->fails()) {
@@ -393,7 +633,7 @@ public function fetchNearbyUsers(Request $request)
     $radius = $request->radius;
     $minAge = $request->min_age;
     $maxAge = $request->max_age;
-    $bloodType = $request->blood_type;
+    $bloodTypes = $request->blood_types; // Now expects an array of blood types
 
     $query = User::select('*')
         ->selectRaw('(
@@ -403,6 +643,7 @@ public function fetchNearbyUsers(Request $request)
             )
         ) AS distance', [$latitude, $longitude, $latitude])
         ->having('distance', '<=', $radius)
+        ->where('user_type', 'user') // Ensure only users are fetched
         ->orderBy('distance');
 
     if (!empty($minAge) && !empty($maxAge)) {
@@ -413,15 +654,14 @@ public function fetchNearbyUsers(Request $request)
         $query->where('age', '<=', $maxAge);
     }
 
-    if (!empty($bloodType)) {
-        $query->where('blood_type', $bloodType);
+    if (!empty($bloodTypes)) {
+        $query->whereIn('blood_type', $bloodTypes); // Filter users by multiple blood types
     }
 
     $nearbyUsers = $query->get();
 
     return response()->json(['nearby_users' => $nearbyUsers], 200);
 }
-
 
 
 }

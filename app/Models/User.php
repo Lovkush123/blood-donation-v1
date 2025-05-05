@@ -19,6 +19,8 @@ class User extends Authenticatable
         'address',
         'latitude',
         'longitude',
+         'current_latitude',
+        'current_longitude',
         'date_of_birth',
         'age',
         'blood_type',
@@ -29,6 +31,7 @@ class User extends Authenticatable
         'user_type',
         'status',
         'count',
+        'donor_type',
         'otp',
     ];
 

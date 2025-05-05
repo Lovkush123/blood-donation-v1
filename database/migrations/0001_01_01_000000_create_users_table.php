@@ -21,17 +21,20 @@ return new class extends Migration
             $table->string('address')->nullable();
             $table->decimal('latitude', 10, 8)->nullable();
             $table->decimal('longitude', 11, 8)->nullable();
+            $table->decimal('current_latitude', 10, 8)->nullable(); // Added current latitude
+            $table->decimal('current_longitude', 11, 8)->nullable(); // Added current longitude
             $table->date('date_of_birth')->nullable();
             $table->integer('age')->nullable();
             $table->string('blood_type', 3)->nullable();
             $table->date('last_donation_date')->nullable();
             $table->boolean('eligibility_status')->nullable(true);
-            $table->integer('credit_points')->nullable(0);
+            $table->integer('credit_points')->default(0);
             $table->string('token')->nullable();
-            $table->string('user_type')->nullable('user');
-            $table->string('status')->nullable('pending');
-            $table->integer('count')->nullable(0);
+            $table->string('user_type')->default('user');
+            $table->string('status')->default('pending');
+            $table->integer('count')->default(0);
             $table->string('otp')->nullable(); // Added OTP field
+            $table->string('donor_type')->nullable(); // Added donor type field
             $table->timestamps();
         });
 

@@ -5,12 +5,13 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\EventController;
-
+use App\Http\Controllers\BloodDonationHistoryController;
 use App\Http\Controllers\DonationController;
 
 
 Route::post('login', [AuthController::class, 'login']);
 Route::post('register', [AuthController::class, 'register']);
+Route::post('registerer', [AuthController::class, 'registerer']);
 Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 Route::patch('update/{userId}', [AuthController::class, 'update']);
 Route::get('/user/{id}', [AuthController::class, 'fetchUser']);
@@ -42,3 +43,15 @@ Route::post('donations', [DonationController::class, 'store']); // Route to crea
 Route::get('donations/user/{userId}', [DonationController::class, 'fetchByUserId']); // Route to fetch donations by user ID
 // Route::post('donors/check', [DonationController::class, 'fetchDonor']); // Route to check if a donor
 Route::get('/eligible', [DonationController::class, 'fetchDonorsEligibleForDonation']);
+
+
+Route::get('/blood-donations', [BloodDonationHistoryController::class, 'index']);
+Route::post('/blood-donations', [BloodDonationHistoryController::class, 'store']);
+Route::get('blood-donations/{bloodDonationHistory}', [BloodDonationHistoryController::class, 'show']);
+Route::put('blood-donations/{bloodDonationHistory}', [BloodDonationHistoryController::class, 'update']);
+Route::delete('blood-donations/{bloodDonationHistory}', [BloodDonationHistoryController::class, 'destroy']);
+Route::get('/donation-history', [BloodDonationHistoryController::class, 'getDonationHistory']);
+
+
+
+
