@@ -131,6 +131,66 @@ public function login(Request $request)
 //     }
 // }
 
+// public function register(Request $request)
+// {
+//     $validator = Validator::make($request->all(), [
+//         'username' => 'required|string|max:255|unique:users',
+//         'email' => 'required|string|email|max:255|unique:users',
+//         'phone_number' => 'required|string',
+//         'password' => 'required|string|min:8',
+
+//         // Optional fields
+//         'full_name' => 'nullable|string|max:255',
+//         'address' => 'nullable|string',
+//         'date_of_birth' => 'nullable|date',
+//         'latitude' => 'nullable|numeric',
+//         'longitude' => 'nullable|numeric',
+//         'current_latitude' => 'nullable|numeric',
+//         'current_longitude' => 'nullable|numeric',
+//         'blood_type' => 'nullable|string',
+//         'last_donation_date' => 'nullable|date',
+//         'eligibility_status' => 'nullable|string',
+//         'credit_points' => 'nullable|integer',
+//         'user_type' => 'nullable|string',
+//         'count' => 'nullable|integer',
+//         'donor_type' => 'nullable|string',
+//     ]);
+
+//     if ($validator->fails()) {
+//         return response()->json(['errors' => $validator->errors()], 422);
+//     }
+
+//     try {
+//         $user = User::create([
+//              'user_id' => $request->user_id,
+//             'full_name' => $request->full_name,
+//             'username' => $request->username,
+//             'email' => $request->email,
+//             'password' => Hash::make($request->password),
+//             'phone_number' => $request->phone_number,
+//             'address' => $request->address,
+//             'latitude' => $request->latitude,
+//             'longitude' => $request->longitude,
+//             'current_latitude' => $request->current_latitude,
+//             'current_longitude' => $request->current_longitude,
+//             'date_of_birth' => $request->date_of_birth,
+//             'blood_type' => $request->blood_type,
+//             'last_donation_date' => $request->last_donation_date,
+//             'eligibility_status' => '1',
+//             'credit_points' => 0,
+//             'token' => Str::random(60),
+//             'user_type' => $request->user_type,
+//             'status' => 'pending',
+//             'otp' => rand(100000, 999999),
+//             'count' => 0,
+//             'donor_type' => $request->donor_type,
+//         ]);
+
+//         return response()->json(['message' => 'User registered successfully!', 'user' => $user], 201);
+//     } catch (\Exception $e) {
+//         return response()->json(['error' => $e->getMessage()], 500);
+//     }
+// }
 public function register(Request $request)
 {
     $validator = Validator::make($request->all(), [
@@ -154,6 +214,8 @@ public function register(Request $request)
         'user_type' => 'nullable|string',
         'count' => 'nullable|integer',
         'donor_type' => 'nullable|string',
+        'gender' => 'nullable|string|max:10', // New field
+        'sub_user_type' => 'nullable|string|max:50', // New field
     ]);
 
     if ($validator->fails()) {
@@ -162,7 +224,7 @@ public function register(Request $request)
 
     try {
         $user = User::create([
-             'user_id' => $request->user_id,
+            'user_id' => $request->user_id,
             'full_name' => $request->full_name,
             'username' => $request->username,
             'email' => $request->email,
@@ -184,6 +246,8 @@ public function register(Request $request)
             'otp' => rand(100000, 999999),
             'count' => 0,
             'donor_type' => $request->donor_type,
+            'gender' => $request->gender, // New field
+            'sub_user_type' => $request->sub_user_type, // New field
         ]);
 
         return response()->json(['message' => 'User registered successfully!', 'user' => $user], 201);
