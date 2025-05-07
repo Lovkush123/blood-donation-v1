@@ -459,31 +459,70 @@ public function update(Request $request, $userId)
 
 
 ///fetch all user 
-public function fetchAllUsers()
-    {
+// public function fetchAllUsers()
+//     {
       
-        try {
+//         try {
         
-            // Fetch all users with eligibility_status = 1
-            $users = User::where('eligibility_status', 1)->get();
+//             // Fetch all users with eligibility_status = 1
+//             $users = User::where('eligibility_status', 1)->get();
 
-            if ($users->isEmpty()) {
-                return response()->json([
-                    'message' => 'No eligible users found',
-                ], 404);
-            }
+//             if ($users->isEmpty()) {
+//                 return response()->json([
+//                     'message' => 'No eligible users found',
+//                 ], 404);
+//             }
 
+//             return response()->json([
+//                 'message' => 'Users fetched successfully',
+//                 'users' => $users,
+//             ]);
+//         } catch (\Exception $e) {
+//             return response()->json([
+//                 'error' => 'Failed to fetch users',
+//                 'message' => $e->getMessage(),
+//             ], 500);
+//         }
+//     }
+public function fetchAllUsers()
+{
+    try {
+        // Fetch all users with eligibility_status = 1
+        $users = User::where('eligibility_status', 1)->get();
+
+        if ($users->isEmpty()) {
             return response()->json([
-                'message' => 'Users fetched successfully',
-                'users' => $users,
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Failed to fetch users',
-                'message' => $e->getMessage(),
-            ], 500);
+                'message' => 'No eligible users found',
+            ], 404);
         }
+
+        // Count by user_type
+        $userTypeCounts = User::select('user_type', \DB::raw('count(*) as count'))
+            ->where('eligibility_status', 1)
+            ->groupBy('user_type')
+            ->get()
+            ->pluck('count', 'user_type');
+
+        // Total count of all eligible users
+        $totalUsers = $users->count();
+
+        return response()->json([
+            'message' => 'Users fetched successfully',
+            'users' => $users,
+            'counts' => [
+                'total' => $totalUsers,
+                'user' => $userTypeCounts['user'] ?? 0,
+                'admin' => $userTypeCounts['admin'] ?? 0,
+                'hospital' => $userTypeCounts['hospital'] ?? 0,
+            ],
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Failed to fetch users',
+            'message' => $e->getMessage(),
+        ], 500);
     }
+}
 
 // Forgot Password (using OTP)
   public function forgotPassword(Request $request)

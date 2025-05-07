@@ -48,4 +48,9 @@ class User extends Authenticatable
         'date_of_birth' => 'date',
        
     ];
+
+    public function bloodDonationHistories()
+{
+    return $this->hasMany(BloodDonationHistory::class, 'user_id', 'user_id');
+}
 }
