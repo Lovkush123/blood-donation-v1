@@ -469,46 +469,48 @@ public function update(Request $request, $userId)
         // Find the user by user_id
         $user = User::findOrFail($userId);
 
-        // Validate the request to ensure all fields can be updated
+        // Validate the request
         $request->validate([
-            'full_name' => 'sometimes|required|string',
-            'username' => 'sometimes|required|string|unique:users,username,' . $user->id,
-            'email' => 'sometimes|required|string|email|unique:users,email,' . $user->id,
-            'password' => 'sometimes|required|string|min:8',
+            'full_name' => 'sometimes|required|string|max:255',
+            'username' => 'sometimes|required|string|max:255|unique:users,username,' . $user->id,
+            'email' => 'sometimes|required|string|email|max:255|unique:users,email,' . $user->id,
             'phone_number' => 'sometimes|required|string',
-            'address' => 'sometimes|required|string',
-            'latitude' => 'sometimes|required|numeric',
-            'longitude' => 'sometimes|required|numeric',
-            'current_latitude' => 'sometimes|required|numeric', // Added current latitude validation
-            'current_longitude' => 'sometimes|required|numeric', // Added current longitude validation
-            'date_of_birth' => 'sometimes|required|date',
-            'age' => 'sometimes|required|integer',
-            'blood_type' => 'sometimes|required|string',
-            'last_donation_date' => 'sometimes|required|date',
-            'eligibility_status' => 'sometimes|required|string',
-            'credit_points' => 'sometimes|required|integer',
-            'token' => 'sometimes|required|string',
-            'user_type' => 'sometimes|required|string|in:admin,user,hospital',
-            'status' => 'sometimes|required|string',
-            'count' => 'sometimes|required|integer',
-            'donor_type' => 'sometimes|required|string', // Added donor type validation
+            'password' => 'sometimes|required|string|min:8',
+            'address' => 'sometimes|nullable|string',
+            'latitude' => 'sometimes|nullable|numeric',
+            'longitude' => 'sometimes|nullable|numeric',
+            'current_latitude' => 'sometimes|nullable|numeric',
+            'current_longitude' => 'sometimes|nullable|numeric',
+            'date_of_birth' => 'sometimes|nullable|date',
+            'blood_type' => 'sometimes|nullable|string',
+            'last_donation_date' => 'sometimes|nullable|date',
+            'eligibility_status' => 'sometimes|nullable|string',
+            'credit_points' => 'sometimes|nullable|integer',
+            'token' => 'sometimes|nullable|string',
+            'user_type' => 'sometimes|nullable|string|in:admin,user,hospital',
+            'status' => 'sometimes|nullable|string',
+            'count' => 'sometimes|nullable|integer',
+            'donor_type' => 'sometimes|nullable|string',
+            'gender' => 'sometimes|nullable|string|max:10', // New field
+            'sub_user_type' => 'sometimes|nullable|string|max:50', // New field
         ]);
 
-        // Update the user fields from the request if present
+        // Fill fields if present in request
         $user->fill($request->only([
             'full_name', 'username', 'email', 'phone_number', 'address', 'latitude', 'longitude',
-            'current_latitude', 'current_longitude', 'date_of_birth', 'age', 'blood_type', 'last_donation_date',
-            'eligibility_status', 'credit_points', 'token', 'user_type', 'status', 'count', 'donor_type'
+            'current_latitude', 'current_longitude', 'date_of_birth', 'blood_type', 'last_donation_date',
+            'eligibility_status', 'credit_points', 'token', 'user_type', 'status', 'count', 'donor_type',
+            'gender', 'sub_user_type'
         ]));
 
+        // Hash password if it's updated
         if ($request->has('password')) {
             $user->password = Hash::make($request->password);
         }
 
-        // Save the updated user data
+        // Save updated user data
         $user->save();
 
-        // Return a success response
         return response()->json([
             'message' => 'Profile updated successfully',
             'user' => $user,
@@ -520,6 +522,7 @@ public function update(Request $request, $userId)
         ], 500);
     }
 }
+
 
 
 ///fetch all user 
