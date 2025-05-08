@@ -466,16 +466,16 @@ public function registerer(Request $request)
 public function update(Request $request, $userId)
 {
     try {
-        // Find the user by user_id
+        // Find the user by ID
         $user = User::findOrFail($userId);
 
         // Validate the request
         $request->validate([
-            'full_name' => 'sometimes|required|string|max:255',
+            'full_name' => 'sometimes|nullable|string|max:255',
             'username' => 'sometimes|required|string|max:255|unique:users,username,' . $user->id,
             'email' => 'sometimes|required|string|email|max:255|unique:users,email,' . $user->id,
-            'phone_number' => 'sometimes|required|string',
-            'password' => 'sometimes|required|string|min:8',
+            'phone_number' => 'sometimes|nullable|string',
+            'password' => 'sometimes|nullable|string|min:8',
             'address' => 'sometimes|nullable|string',
             'latitude' => 'sometimes|nullable|numeric',
             'longitude' => 'sometimes|nullable|numeric',
@@ -491,11 +491,11 @@ public function update(Request $request, $userId)
             'status' => 'sometimes|nullable|string',
             'count' => 'sometimes|nullable|integer',
             'donor_type' => 'sometimes|nullable|string',
-            'gender' => 'sometimes|nullable|string|max:10', // New field
-            'sub_user_type' => 'sometimes|nullable|string|max:50', // New field
+            'gender' => 'sometimes|nullable|string|max:10',
+            'sub_user_type' => 'sometimes|nullable|string|max:50',
         ]);
 
-        // Fill fields if present in request
+        // Fill user model with request data
         $user->fill($request->only([
             'full_name', 'username', 'email', 'phone_number', 'address', 'latitude', 'longitude',
             'current_latitude', 'current_longitude', 'date_of_birth', 'blood_type', 'last_donation_date',
@@ -503,17 +503,44 @@ public function update(Request $request, $userId)
             'gender', 'sub_user_type'
         ]));
 
-        // Hash password if it's updated
+        // Update password if provided
         if ($request->has('password')) {
             $user->password = Hash::make($request->password);
         }
 
-        // Save updated user data
+        // Save changes
         $user->save();
 
+        // Return full user details
         return response()->json([
             'message' => 'Profile updated successfully',
-            'user' => $user,
+            'user' => [
+                'id' => $user->id,
+                'user_id' => $user->user_id,
+                'full_name' => $user->full_name,
+                'username' => $user->username,
+                'email' => $user->email,
+                'phone_number' => $user->phone_number,
+                'address' => $user->address,
+                'latitude' => $user->latitude,
+                'longitude' => $user->longitude,
+                'current_latitude' => $user->current_latitude,
+                'current_longitude' => $user->current_longitude,
+                'date_of_birth' => $user->date_of_birth,
+                'blood_type' => $user->blood_type,
+                'last_donation_date' => $user->last_donation_date,
+                'eligibility_status' => $user->eligibility_status,
+                'credit_points' => $user->credit_points,
+                'token' => $user->token,
+                'user_type' => $user->user_type,
+                'status' => $user->status,
+                'count' => $user->count,
+                'donor_type' => $user->donor_type,
+                'gender' => $user->gender,
+                'sub_user_type' => $user->sub_user_type,
+                'created_at' => $user->created_at,
+                'updated_at' => $user->updated_at,
+            ]
         ]);
     } catch (\Exception $e) {
         return response()->json([
@@ -522,6 +549,7 @@ public function update(Request $request, $userId)
         ], 500);
     }
 }
+
 
 
 
